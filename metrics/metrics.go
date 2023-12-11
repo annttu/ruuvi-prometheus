@@ -25,11 +25,15 @@
 package metrics
 
 import (
+	"encoding/binary"
+	"encoding/hex"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	dto "github.com/prometheus/client_model/go"
 	"gitlab.com/jtaimisto/bluewalker/host"
 	"gitlab.com/jtaimisto/bluewalker/ruuvi"
 )
@@ -95,10 +99,15 @@ var (
 const ttl = 1 * time.Minute
 
 var deviceLastSeen map[string]time.Time
+var deviceRawData map[string]string
+var deviceRawDataFormat map[string]int
+
 var mu sync.Mutex
 
 func init() {
 	deviceLastSeen = make(map[string]time.Time)
+	deviceRawData = make(map[string]string)
+	deviceRawDataFormat = make(map[string]int)
 
 	go func() {
 		for range time.Tick(time.Minute) {
@@ -107,11 +116,25 @@ func init() {
 	}()
 }
 
-func ObserveRuuvi(o RuuviReading) {
+func ObserveRuuvi(o RuuviReading, rawData []byte) {
 	addr := o.Address.String()
+
+	if len(rawData) >= 2 && binary.LittleEndian.Uint16(rawData) == 0x0499 {
+		rawData = rawData[2:]
+	}
 
 	mu.Lock()
 	deviceLastSeen[addr] = time.Now()
+
+	// FIXME: Add more robust parsing for version string
+	if len(rawData) > 1 {
+		deviceRawData[addr] = strings.ToUpper("0201061BFF9904" + hex.EncodeToString(rawData))
+		deviceRawDataFormat[addr] = int(rawData[0])
+	} else {
+		deviceRawData[addr] = ""
+		deviceRawDataFormat[addr] = 5
+	}
+
 	mu.Unlock()
 
 	ruuviFrames.WithLabelValues(addr).Inc()
@@ -169,6 +192,7 @@ func clearExpired() {
 			seqno.DeleteLabelValues(addr)
 
 			delete(deviceLastSeen, addr)
+			delete(deviceRawData, addr)
 		}
 	}
 }
@@ -187,4 +211,19 @@ func (r RuuviReading) DataFormat() int {
 	} else {
 		return 5
 	}
+}
+
+
+func readCounterVec(m *prometheus.CounterVec, l prometheus.Labels) float64 {
+	pb := &dto.Metric{}
+	c := m.With(l)
+	c.Write(pb)
+	return pb.GetCounter().GetValue()
+}
+
+func readGaugeVec(m *prometheus.GaugeVec, l prometheus.Labels) float64 {
+	pb := &dto.Metric{}
+	c := m.With(l)
+	c.Write(pb)
+	return pb.GetGauge().GetValue()
 }

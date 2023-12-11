@@ -35,6 +35,7 @@ var Handler = http.NewServeMux()
 func init() {
 	Handler.HandleFunc("/", handleRoot)
 	Handler.Handle("/metrics", promhttp.Handler())
+	Handler.HandleFunc("/history", handleHistory)
 }
 
 const rootContent = `ruuvi-prometheus exporter

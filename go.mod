@@ -26,8 +26,8 @@ module github.com/joneskoo/ruuvi-prometheus
 
 require (
 	github.com/prometheus/client_golang v1.8.0
+	github.com/prometheus/client_model v0.5.0
 	gitlab.com/jtaimisto/bluewalker v0.3.1-0.20220305171027-462fb1fb7eba
-	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 )
 
 go 1.13
