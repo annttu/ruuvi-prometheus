@@ -95,9 +95,28 @@ can create Raspberry appliance image without any C code besides Linux.
   <dd>Ruuvi transmit power in dBm</dd>
 </dl>
 
+## Exported HTTP endpoints
+
+```
+/                This page
+/metrics         Prometheus metrics endpoint
+/history         Ruuvi Gateway compatible history endpoint
+```
+
 ## System requirements
 
 * Linux
 * Bluetooth LE; bluetoothd must not be running.
 
 [bluewalker]: https://gitlab.com/jtaimisto/bluewalker/
+
+
+## Installation on Raspbian
+
+* Download binary from releases page to /usr/local/bin/.
+* Copy systemd service from contrib/ruuvi-prometheus.service to /etc/systemd/system/
+* Stop and disable bluetooth service
+  * `systemctl disable --now bluetooth.service`
+* Enable and start ruuvi-prometheus service
+  * `systemctl enable --now ruuvi-prometheus.service`
+* HTTP server is listening on port 9999

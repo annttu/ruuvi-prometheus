@@ -43,6 +43,7 @@ https://github.com/joneskoo/ruuvi-prometheus
 
 /                This page
 /metrics         Prometheus metrics endpoint
+/history         Ruuvi Gateway compatible history endpoint
 `
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
