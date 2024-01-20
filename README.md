@@ -113,7 +113,7 @@ can create Raspberry appliance image without any C code besides Linux.
 
 ## Installation on Raspbian
 
-* Download binary from releases page to /usr/local/bin/.
+* Download binary from releases page for correct architecture to /usr/local/bin/ruuvi-prometheus.
 * Copy systemd service from contrib/ruuvi-prometheus.service to /etc/systemd/system/
 * Stop and disable bluetooth service
   * `systemctl disable --now bluetooth.service`
