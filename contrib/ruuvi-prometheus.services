@@ -1,0 +1,15 @@
+[Unit]
+Description=ruuvi prometheus services
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/hciconfig hci0 down
+ExecStart=/usr/local/bin/ruuvi-prometheus -listen :9999
+TimeoutSec=300
+# Restart always when crashed.
+RestartSec=60
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
